@@ -1,113 +1,155 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
 
 export default function Home() {
+  const [carPrice, setCarPrice] = useState<string>("0");
+  const [downPayment, setDownPayment] = useState<string>("0");
+  const [loanAmount, setLoanAmount] = useState<number>(0);
+  const [interestRate, setInterestRate] = useState<string>("0");
+  const [installmentMonths, setInstallmentMonths] = useState<number>(3);
+  const [monthlyPayment, setMonthlyPayment] = useState<number>(0);
+  const [totalPayment, setTotalPayment] = useState<number>(0);
+  const [difference, setDifference] = useState<number>(0);
+
+  const formatVND = (value: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const parseVND = (value: string) => {
+    return parseFloat(value.replace(/[^0-9]/g, "")) || 0;
+  };
+
+  const formatPercentage = (value: string) => {
+    return value.replace(/^0+/, "").replace(/[^0-9.,]/g, "") + "%";
+  };
+
+  const parsePercentage = (value: string) => {
+    const normalizedValue = value.replace(",", "."); // Chuyển dấu phẩy thành dấu chấm
+    return parseFloat(normalizedValue.replace(/[^0-9.]/g, "")) || 0;
+  };
+
+  useEffect(() => {
+    const parsedCarPrice = parseVND(carPrice);
+    const parsedDownPayment = parseVND(downPayment);
+    setLoanAmount(parsedCarPrice - parsedDownPayment);
+  }, [carPrice, downPayment]);
+
+  useEffect(() => {
+    const parsedInterestRate = parsePercentage(interestRate);
+    if (loanAmount > 0 && parsedInterestRate > 0 && installmentMonths > 0) {
+      const monthlyInterestRate = parsedInterestRate / 100;
+      const totalMonthlyInterest = loanAmount * monthlyInterestRate;
+      const principalMonthlyPayment = loanAmount / installmentMonths;
+      const totalMonthlyPayment =
+        principalMonthlyPayment + totalMonthlyInterest;
+
+      setMonthlyPayment(totalMonthlyPayment);
+      setTotalPayment(totalMonthlyPayment * installmentMonths);
+      setDifference(totalPayment - loanAmount);
+    } else {
+      setMonthlyPayment(0);
+      setTotalPayment(0);
+      setDifference(0);
+    }
+  }, [loanAmount, interestRate, installmentMonths]);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="w-full h-[100vh] overflow-y-auto p-[20px]">
+      <form>
+        <div className="flex flex-col gap-[8px] mb-4">
+          <label>Giá trị xe bạn mua (vnđ)</label>
+          <input
+            value={carPrice !== "0" ? carPrice : ""}
+            onChange={(e) => setCarPrice(e.currentTarget.value)}
+            onBlur={() => setCarPrice(formatVND(parseVND(carPrice)))}
+            className="border-[1px] h-[40px] w-[100%] px-[10px] rounded-[5px]"
+            type="text"
+            inputMode="numeric"
+          />
         </div>
-      </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
+        <div className="flex flex-col gap-[8px] mb-4">
+          <label>Số tiền trả trước (vnđ)</label>
+          <input
+            value={downPayment !== "0" ? downPayment : ""}
+            onChange={(e) => setDownPayment(e.currentTarget.value)}
+            onBlur={() => setDownPayment(formatVND(parseVND(downPayment)))}
+            className="border-[1px] h-[40px] w-[100%] px-[10px] rounded-[5px]"
+            type="text"
+            inputMode="numeric"
+          />
+        </div>
+        <div className="flex flex-col gap-[8px] mb-4">
+          <label>Số tiền bạn sẽ vay (vnđ)</label>
+          <input
+            value={formatVND(loanAmount)}
+            readOnly
+            className="border-[1px] h-[40px] w-[100%] px-[10px] rounded-[5px]"
+            type="text"
+          />
+        </div>
+        <div className="flex flex-col gap-[8px] mb-4">
+          <label>Lãi suất (%)</label>
+          <input
+            value={interestRate !== "0" ? interestRate : ""}
+            onChange={(e) => setInterestRate(e.currentTarget.value)}
+            onBlur={() => setInterestRate(formatPercentage(interestRate))}
+            className="border-[1px] h-[40px] w-[100%] px-[10px] rounded-[5px]"
+            type="text"
+            inputMode="decimal"
+          />
+        </div>
+        <div className="flex flex-col gap-[8px] mb-4">
+          <label>Lựa chọn thời gian trả góp:</label>
+          <select
+            value={installmentMonths}
+            onChange={(e) => setInstallmentMonths(Number(e.target.value))}
+            className="border-[1px] h-[40px] rounded-[5px]"
+          >
+            <option value="3">3 tháng</option>
+            <option value="6">6 tháng</option>
+            <option value="9">9 tháng</option>
+            <option value="12">12 tháng</option>
+            <option value="15">15 tháng</option>
+            <option value="18">18 tháng</option>
+            <option value="21">21 tháng</option>
+            <option value="24">24 tháng</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-[8px] mb-4">
+          <label>Số tiền phải thanh toán hàng tháng (vnđ)</label>
+          <input
+            value={formatVND(monthlyPayment)}
+            readOnly
+            className="border-[1px] h-[40px] w-[100%] px-[10px] rounded-[5px]"
+            type="text"
+          />
+        </div>
+        <div className="flex flex-col gap-[8px] mb-4">
+          <label>Tổng tiền trả góp hàng tháng (vnđ)</label>
+          <input
+            value={formatVND(totalPayment)}
+            readOnly
+            className="border-[1px] h-[40px] w-[100%] px-[10px] rounded-[5px]"
+            type="text"
+          />
+        </div>
+        <div className="flex flex-col gap-[8px] mb-4">
+          <label>Số tiền chênh lệch(vnđ)</label>
+          <p className="italic">
+            (Tổng tiền trả góp hàng tháng - số tiền bạn vay){" "}
           </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+          <input
+            value={formatVND(difference)}
+            readOnly
+            className="border-[1px] h-[40px] w-[100%] px-[10px] rounded-[5px]"
+            type="text"
+          />
+        </div>
+      </form>
     </main>
   );
 }
