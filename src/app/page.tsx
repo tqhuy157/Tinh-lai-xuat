@@ -216,7 +216,7 @@ export default function Home() {
   }, [totalPayment, loanAmount]);
 
   return (
-    <main className="w-full h-[100vh] overflow-y-auto p-[20px]">
+    <main className="w-full h-[200vh] overflow-y-auto p-[20px]">
       <form>
         <div className="flex flex-col gap-[8px] mb-4">
           <label>Giá trị xe bạn mua (vnđ)</label>
