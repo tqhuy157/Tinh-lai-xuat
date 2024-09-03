@@ -60,7 +60,7 @@ export default function Home() {
   }, [totalPayment, loanAmount]);
 
   return (
-    <main className="w-full h-[200vh] w-[390px] overflow-y-auto p-[5px] mx-auto ">
+    <main className="w-full h-[160vh] max-w-[390px] overflow-y-auto p-[5px] mx-auto ">
       <h1 className="text-[18px] font-bold uppercase mb-[10px] py-[20px] text-center">
         Tính lãi xuất trả góp
       </h1>
